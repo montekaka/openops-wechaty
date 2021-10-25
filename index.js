@@ -18,6 +18,7 @@ app.use(express.urlencoded({extended:false}));
 // app.use(logger('dev'));
 
 const bot = new Wechaty({
+  name: 'openops-wechaty-bot',
   puppet: 'wechaty-puppet-service',
   puppetOptions: {
     token: process.env.WECHATY_PUPPET_SERVICE_TOKEN
@@ -46,6 +47,44 @@ await bot
   .start()  
 
 // routers
+
+router.get('/start-bot', async(req, res) => {
+  try {
+    await bot
+    .on('scan', (qrcode, status) => {
+      if (status === ScanStatus.Waiting) {
+        QrcodeTerminal.generate(qrcode, {
+          small: true
+        })
+      }
+    })
+    .on('login', async user => {
+      console.log(`user: ${JSON.stringify(user)}`)
+    })
+    .on('message', async message => {
+      if (message.type() !== Message.Type.Text) {
+        const file = await message.toFileBox();
+        const name = file.name;
+        console.log("Save file to: " + name);
+      }
+      console.log(`message: ${JSON.stringify(message)}`)
+    })
+    .start()  
+    res.sendStatus(200);    
+  } catch(err) {
+    res.sendStatus(500);
+  }
+  
+})
+
+router.get('/stop-bot', async(req, res) => {
+  try {
+    await bot.stop();
+    res.sendStatus(200);
+  } catch (err) {
+    res.sendStatus(500);
+  }
+})
 
 // get all friends from the wechat sign in user
 router.get('/friends', async (req, res) => {
