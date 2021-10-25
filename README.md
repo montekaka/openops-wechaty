@@ -27,12 +27,12 @@ npm start
 
 1. Get friends on wechat
 
-GET: http://localhost:8080/friends
+- GET: http://localhost:8080/friends
 
 
 2. Send Text message to friend (contact)
 
-POST: http://localhost:8080/message
+- POST: http://localhost:8080/message
 
 req body:
 
