@@ -43,6 +43,7 @@ await bot
       console.log("Save file to: " + name);
     }
     console.log(`message: ${JSON.stringify(message)}`)
+    console.log(`message ${message.text()}`)
   })
   .start()  
 
