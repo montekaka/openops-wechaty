@@ -1,0 +1,18 @@
+{
+  "name": "wx-bot",
+  "version": "0.0.1",
+  "description": "wechat enterprise chatbot",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "montekaka",
+  "license": "ISC",
+  "dependencies": {
+    "qrcode-terminal": "^0.12.0",
+    "wechaty": "^0.68.1",
+    "wechaty-puppet-service": "^0.30.2"
+  }
+}
