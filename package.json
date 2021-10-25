@@ -11,6 +11,9 @@
   "author": "montekaka",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "morgan": "^1.10.0",
     "qrcode-terminal": "^0.12.0",
     "wechaty": "^0.68.1",
     "wechaty-puppet-service": "^0.30.2"
