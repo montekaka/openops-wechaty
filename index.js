@@ -12,7 +12,7 @@ const router = express.Router();
 dotenv.config();
 let port = 3000;
 if( process.env.NODE_ENV === 'development') {
-  port = 8080; //49160
+  port = 49160; //49160
 }
 
 const app = express();
@@ -82,21 +82,10 @@ const startBot = async () => {
       // forward to cleint app with socket.io
       // message: {"_events":{},"_eventsCount":0,"id":"1000867","payload":{"filename":"","fromId":"7881300233152715","id":"1000867","mentionIdList":[],"roomId":"","text":"Hi ","timestamp":1635223643000,"toId":"1688857120246081","type":7}}
       const contact = message.from();
-      // const toContact = message.to();
-      // console.log({
-      //   from: contact.id,
-      //   content: message.text(), 
-      //   createTime: message.date(), 
-      //   fromUserName: contact.name(), 
-      //   messageType: 'receive'
-      // })
-
-      // io.emit(`wechat_${contact.id}`, {
-      //   content: message.text(), 
-      //   createTime: message.date(), 
-      //   fromUserName: contact.name(), 
-      //   messageType: 'receive'
-      // }); 
+      
+      // Make a request to the backend server:
+      // 1. save the message to database
+      // 2. send the message to front end client app throught socket.io
       axios.post(`${process.env.BACKEND_HOST}/v1/forward-message`, {
         socketId: `wechat_${contact.id}`,
         content: message.text(), 
@@ -113,13 +102,6 @@ const startBot = async () => {
 
 await startBot();
 // routers
-
-router.post('/v1/forward-message', async(req, res) => {
-  const data = req.body;
-  const socketId = data.socketId;
-  res.io.emit(socketId, data);
-  res.send('success');
-})
 
 router.get('/v1/start-bot', async(req, res) => {
   try {
@@ -151,7 +133,7 @@ router.get('/v1/friends', async (req, res) => {
 
 // Basic chat functoins
 // send message to wechat contact by name
-router.post('/v1/wecom-send-message', async (req, res) => {
+router.post('/v1/message', async (req, res) => {
   const name = req.body.name;
   const message = req.body.message;
   
@@ -170,14 +152,6 @@ router.post('/v1/wecom-send-message', async (req, res) => {
   } else {
     res.sendStatus(500)
   }
-})
-
-// data for getting list of contacts 
-router.get('/v1/contacts', (req, res) => {
-  res.send([
-    {"name": "Kaka", "id": "7881300233152715", "avatar": "http://mmhead.c2c.wechat.com/mmhead/SMt4cxnN46q1o0KsondHotCuFkCZh28ZbKHichbnFRFbiad2ZkRFswkg/0"},
-    {"name": "may 张丹萍", "id": "7881302734171450", "avatar": "http://mmhead.c2c.wechat.com/mmhead/bVy2VQVTWzbNu2kVtzRgbiaPAO53Ws8uG1HB7PS2bBGNr6mEfj80XUA/0"}
-  ])
 })
 
 app.use(router);
