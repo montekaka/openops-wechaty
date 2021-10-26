@@ -23,16 +23,24 @@ WECHATY_PUPPET_SERVICE_NO_TLS_INSECURE_CLIENT=true \
 npm start
 ```
 
+4. .env file, e.g.
+
+```
+NODE_ENV=development
+WECHATY_PUPPET_SERVICE_TOKEN=puppet_wxwork_key
+BACKEND_HOST=http://localhost:8000
+```
+
 ### Enpoints
 
 1. Get friends on wechat
 
-- GET: http://localhost:8080/friends
+- GET: /v1/friends
 
 
 2. Send Text message to friend (contact)
 
-- POST: http://localhost:8080/message
+- POST: /v1/message
 
 req body:
 
