@@ -3,8 +3,6 @@ import { ScanStatus } from 'wechaty-puppet'
 import QrcodeTerminal from 'qrcode-terminal';
 import express from 'express';
 import dotenv from 'dotenv';
-import { createServer } from "http";
-import { Server, Socket } from "socket.io";
 import axios from "axios";
 
 const router = express.Router();
@@ -20,38 +18,18 @@ app.use(express.json());
 app.use(express.urlencoded({extended:false}));
 // app.use(logger('dev'));
 
-// socket.io config
-const httpServer = createServer(app);
-// https://stackoverflow.com/questions/59749021/socket-io-error-access-to-xmlhttprequest-has-been-blocked-by-cors-policy
-
-const io = new Server(httpServer, {
-  cors: {
-    origin: process.env.CLIENT_HOST,
-    methods: ["GET", "POST"]
-  }
-});
-
 // handle cross sites request
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  if([process.env.CLIENT_HOST].indexOf(origin) > -1){
+  if([process.env.BACKEND_HOST].indexOf(origin) > -1){
     res.header('Access-Control-Allow-Origin', origin);
   }
   res.header('Access-Control-Allow-Origin', origin);
   // res.header("Access-Control-Allow-Origin", process.env.ALLOW_CLIENT_WHITE_LIST);
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  res.io = io; // add socket.io
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");  
 
   next();
 });
-
-io.on('connect', socket => {
-  console.log('User connected')
-  socket.on('disconnect', () => {
-    console.log('User disconnected')
-  })
-})
-
 
 const bot = new Wechaty({
   name: 'openops-wechaty-bot',
@@ -156,7 +134,6 @@ router.post('/v1/message', async (req, res) => {
 
 app.use(router);
 
-httpServer.listen(port, () => {
-  console.log(`App version 1.0 listening on port ${port}!`);
-})
-
+app.listen(port, () => {
+  console.log(`App version 1.0 listening on port ${port}!`);  
+});
