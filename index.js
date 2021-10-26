@@ -10,7 +10,7 @@ const router = express.Router();
 dotenv.config();
 let port = 3000;
 if( process.env.NODE_ENV === 'development') {
-  port = 49160; //49160
+  port = 7001
 }
 
 const app = express();
