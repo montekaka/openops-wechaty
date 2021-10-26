@@ -25,7 +25,8 @@ const bot = new Wechaty({
   }
 });
 
-await bot
+const startBot = async () => {
+  await bot
   .on('scan', (qrcode, status) => {
     if (status === ScanStatus.Waiting) {
       QrcodeTerminal.generate(qrcode, {
@@ -46,36 +47,19 @@ await bot
     console.log(`message ${message.text()}`)
   })
   .start()  
+}
 
+
+await startBot();
 // routers
 
 router.get('/start-bot', async(req, res) => {
   try {
-    await bot
-    .on('scan', (qrcode, status) => {
-      if (status === ScanStatus.Waiting) {
-        QrcodeTerminal.generate(qrcode, {
-          small: true
-        })
-      }
-    })
-    .on('login', async user => {
-      console.log(`user: ${JSON.stringify(user)}`)
-    })
-    .on('message', async message => {
-      if (message.type() !== Message.Type.Text) {
-        const file = await message.toFileBox();
-        const name = file.name;
-        console.log("Save file to: " + name);
-      }
-      console.log(`message: ${JSON.stringify(message)}`)
-    })
-    .start()  
+    await startBot()
     res.sendStatus(200);    
   } catch(err) {
     res.sendStatus(500);
-  }
-  
+  }  
 })
 
 router.get('/stop-bot', async(req, res) => {
