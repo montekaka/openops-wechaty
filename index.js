@@ -81,6 +81,7 @@ router.get('/friends', async (req, res) => {
   }
 })
 
+// Basic chat functoins
 // send message to wechat contact by name
 router.post('/message', async (req, res) => {
   const name = req.body.name;

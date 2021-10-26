@@ -15,6 +15,7 @@
     "express": "^4.17.1",
     "morgan": "^1.10.0",
     "qrcode-terminal": "^0.12.0",
+    "socket.io": "^4.2.0",
     "wechaty": "0.68.1",
     "wechaty-puppet": "^0.40.0",
     "wechaty-puppet-service": "0.30.2"
