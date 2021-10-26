@@ -3,6 +3,8 @@ import { ScanStatus } from 'wechaty-puppet'
 import QrcodeTerminal from 'qrcode-terminal';
 import express from 'express';
 import dotenv from 'dotenv';
+import { createServer } from "http";
+import { Server, Socket } from "socket.io";
 
 const router = express.Router();
 
@@ -16,6 +18,18 @@ const app = express();
 app.use(express.json()); 
 app.use(express.urlencoded({extended:false}));
 // app.use(logger('dev'));
+
+// socket.io config
+const httpServer = createServer(app);
+// https://stackoverflow.com/questions/59749021/socket-io-error-access-to-xmlhttprequest-has-been-blocked-by-cors-policy
+
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.CLIENT_HOST,
+    methods: ["GET", "POST"]
+  }
+});
+
 
 const bot = new Wechaty({
   name: 'openops-wechaty-bot',
@@ -106,9 +120,21 @@ router.post('/message', async (req, res) => {
 
 app.use(router);
 
-app.listen(port, () => {
-  console.log(`App version 1.0 listening on port ${port}!`);  
-});
+io.on('connect', socket => {
+  console.log('User connected')
+  socket.on('disconnect', () => {
+    console.log('User disconnected')
+  })
+})
+
+httpServer.listen(port, () => {
+  console.log(`App version 1.0 listening on port ${port}!`);
+})
+
+
+// app.listen(port, () => {
+//   console.log(`App version 1.0 listening on port ${port}!`);  
+// });
 
 
 
