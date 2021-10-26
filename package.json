@@ -12,6 +12,7 @@
   "author": "montekaka",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.24.0",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "morgan": "^1.10.0",

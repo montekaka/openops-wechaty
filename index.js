@@ -5,6 +5,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
+import axios from "axios";
 
 const router = express.Router();
 
@@ -29,6 +30,27 @@ const io = new Server(httpServer, {
     methods: ["GET", "POST"]
   }
 });
+
+// handle cross sites request
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if([process.env.CLIENT_HOST].indexOf(origin) > -1){
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  res.header('Access-Control-Allow-Origin', origin);
+  // res.header("Access-Control-Allow-Origin", process.env.ALLOW_CLIENT_WHITE_LIST);
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.io = io; // add socket.io
+
+  next();
+});
+
+io.on('connect', socket => {
+  console.log('User connected')
+  socket.on('disconnect', () => {
+    console.log('User disconnected')
+  })
+})
 
 
 const bot = new Wechaty({
@@ -56,18 +78,50 @@ const startBot = async () => {
       const file = await message.toFileBox();
       const name = file.name;
       console.log("Save file to: " + name);
+    } else if (message.type() === Message.Type.Text) {
+      // forward to cleint app with socket.io
+      // message: {"_events":{},"_eventsCount":0,"id":"1000867","payload":{"filename":"","fromId":"7881300233152715","id":"1000867","mentionIdList":[],"roomId":"","text":"Hi ","timestamp":1635223643000,"toId":"1688857120246081","type":7}}
+      const contact = message.from();
+      // const toContact = message.to();
+      // console.log({
+      //   from: contact.id,
+      //   content: message.text(), 
+      //   createTime: message.date(), 
+      //   fromUserName: contact.name(), 
+      //   messageType: 'receive'
+      // })
+
+      // io.emit(`wechat_${contact.id}`, {
+      //   content: message.text(), 
+      //   createTime: message.date(), 
+      //   fromUserName: contact.name(), 
+      //   messageType: 'receive'
+      // }); 
+      axios.post(`${process.env.BACKEND_HOST}/v1/forward-message`, {
+        socketId: `wechat_${contact.id}`,
+        content: message.text(), 
+        createTime: message.date(), 
+        fromUserName: contact.name(), 
+        messageType: 'receive'
+      })
     }
-    console.log(`message: ${JSON.stringify(message)}`)
-    console.log(`message ${message.text()}`)
+    // console.log(`message: ${JSON.stringify(message)}`)
+    // console.log(`message ${message.text()}`)
   })
   .start()  
 }
 
-
 await startBot();
 // routers
 
-router.get('/start-bot', async(req, res) => {
+router.post('/v1/forward-message', async(req, res) => {
+  const data = req.body;
+  const socketId = data.socketId;
+  res.io.emit(socketId, data);
+  res.send('success');
+})
+
+router.get('/v1/start-bot', async(req, res) => {
   try {
     await startBot()
     res.sendStatus(200);    
@@ -76,7 +130,7 @@ router.get('/start-bot', async(req, res) => {
   }  
 })
 
-router.get('/stop-bot', async(req, res) => {
+router.get('/v1/stop-bot', async(req, res) => {
   try {
     await bot.stop();
     res.sendStatus(200);
@@ -86,7 +140,7 @@ router.get('/stop-bot', async(req, res) => {
 })
 
 // get all friends from the wechat sign in user
-router.get('/friends', async (req, res) => {
+router.get('/v1/friends', async (req, res) => {
   try {
     const friends = await bot.Contact.findAll();
     res.send(friends);
@@ -97,7 +151,7 @@ router.get('/friends', async (req, res) => {
 
 // Basic chat functoins
 // send message to wechat contact by name
-router.post('/message', async (req, res) => {
+router.post('/v1/wecom-send-message', async (req, res) => {
   const name = req.body.name;
   const message = req.body.message;
   
@@ -118,26 +172,17 @@ router.post('/message', async (req, res) => {
   }
 })
 
-app.use(router);
-
-io.on('connect', socket => {
-  console.log('User connected')
-  socket.on('disconnect', () => {
-    console.log('User disconnected')
-  })
+// data for getting list of contacts 
+router.get('/v1/contacts', (req, res) => {
+  res.send([
+    {"name": "Kaka", "id": "7881300233152715", "avatar": "http://mmhead.c2c.wechat.com/mmhead/SMt4cxnN46q1o0KsondHotCuFkCZh28ZbKHichbnFRFbiad2ZkRFswkg/0"},
+    {"name": "may 张丹萍", "id": "7881302734171450", "avatar": "http://mmhead.c2c.wechat.com/mmhead/bVy2VQVTWzbNu2kVtzRgbiaPAO53Ws8uG1HB7PS2bBGNr6mEfj80XUA/0"}
+  ])
 })
+
+app.use(router);
 
 httpServer.listen(port, () => {
   console.log(`App version 1.0 listening on port ${port}!`);
 })
 
-
-// app.listen(port, () => {
-//   console.log(`App version 1.0 listening on port ${port}!`);  
-// });
-
-
-
-// const bot = new Wechaty()
-// await bot.start()
-// const contacts = await bot.Contact.findAll();
