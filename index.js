@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import axios from "axios";
 
 const router = express.Router();
+let botOwner = null;
 
 dotenv.config();
 let port = 3000;
@@ -49,6 +50,7 @@ const startBot = async () => {
     }
   })
   .on('login', async user => {
+    botOwner = user;
     console.log(`user: ${JSON.stringify(user)}`)
   })
   .on('message', async message => {
@@ -61,7 +63,7 @@ const startBot = async () => {
       // message: {"_events":{},"_eventsCount":0,"id":"1000867","payload":{"filename":"","fromId":"7881300233152715","id":"1000867","mentionIdList":[],"roomId":"","text":"Hi ","timestamp":1635223643000,"toId":"1688857120246081","type":7}}
       // const contact = message.from();
       const contact = message.talker()
-      
+      console.log(`user: ${JSON.stringify(botOwner)}`)
       // Make a request to the backend server:
       // 1. save the message to database
       // 2. send the message to front end client app throught socket.io
@@ -75,6 +77,29 @@ const startBot = async () => {
     }
     // console.log(`message: ${JSON.stringify(message)}`)
     // console.log(`message ${message.text()}`)
+  })
+  .on('friendship', async (friendship) => {
+    try {
+      console.log(`received friend event.`)
+      switch (friendship.type()) {
+  
+      // 1. New Friend Request
+  
+      case bot.Friendship.Type.Receive:
+        await friendship.accept();
+        // Make a post request to backend server to notice added a new friend
+
+        break
+  
+      // 2. Friend Ship Confirmed
+  
+      case bot.Friendship.Type.Confirm:
+        console.log(`friendship confirmed`);
+        break
+      }
+    } catch (e) {
+      console.error(e)
+    }
   })
   .start()  
 }
@@ -94,6 +119,15 @@ router.get('/v1/start-bot', async(req, res) => {
 router.get('/v1/stop-bot', async(req, res) => {
   try {
     await bot.stop();
+    res.sendStatus(200);
+  } catch (err) {
+    res.sendStatus(500);
+  }
+})
+
+router.get('/v1/bot-logout', async(req, res) => {
+  try {
+    await bot.logout();
     res.sendStatus(200);
   } catch (err) {
     res.sendStatus(500);
