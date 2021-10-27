@@ -59,7 +59,8 @@ const startBot = async () => {
     } else if (message.type() === Message.Type.Text) {
       // forward to cleint app with socket.io
       // message: {"_events":{},"_eventsCount":0,"id":"1000867","payload":{"filename":"","fromId":"7881300233152715","id":"1000867","mentionIdList":[],"roomId":"","text":"Hi ","timestamp":1635223643000,"toId":"1688857120246081","type":7}}
-      const contact = message.from();
+      // const contact = message.from();
+      const contact = message.talker()
       
       // Make a request to the backend server:
       // 1. save the message to database
