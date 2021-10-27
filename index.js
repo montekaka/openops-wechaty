@@ -62,16 +62,18 @@ const startBot = async () => {
       // forward to cleint app with socket.io
       // message: {"_events":{},"_eventsCount":0,"id":"1000867","payload":{"filename":"","fromId":"7881300233152715","id":"1000867","mentionIdList":[],"roomId":"","text":"Hi ","timestamp":1635223643000,"toId":"1688857120246081","type":7}}
       // const contact = message.from();
+      
       const contact = message.talker()
-      console.log(`user: ${JSON.stringify(botOwner)}`)
       // Make a request to the backend server:
       // 1. save the message to database
       // 2. send the message to front end client app throught socket.io
-      axios.post(`${process.env.BACKEND_HOST}/v1/forward-message`, {
+      await axios.post(`${process.env.BACKEND_HOST}/v1/forward-message`, {
+        kfWechatId: botOwner.id,        
         socketId: `wechat_${contact.id}`,
         content: message.text(), 
         createTime: message.date(), 
         fromUserName: contact.name(), 
+        fromUserId: contact.id,
         messageType: 'receive'
       })
     }
@@ -79,27 +81,25 @@ const startBot = async () => {
     // console.log(`message ${message.text()}`)
   })
   .on('friendship', async (friendship) => {
+    const contact = friendship.contact();
     try {
-      console.log(`received friend event.`)
-      switch (friendship.type()) {
-  
-      // 1. New Friend Request
-  
-      case bot.Friendship.Type.Receive:
-        await friendship.accept();
+      const avatar = await contact.avatar();
+      await axios.post(`${process.env.BACKEND_HOST}/v1/wechat-friendship`, {
+        kfWechatId: botOwner.id, 
+        fromUserName: contact.name(), 
+        fromUserId: contact.id,
+        fromUserAvatar: avatar.remoteUrl
+      })         
+      console.log(`received friend event (${friendship.type()})from ${friendship.contact().name()}`)
+        // Make a post request to backend server to notice added a new friend    
+      if (friendship.type() === bot.Friendship.Type.Receive ) {
+        await friendship.accept()
         // Make a post request to backend server to notice added a new friend
-
-        break
-  
-      // 2. Friend Ship Confirmed
-  
-      case bot.Friendship.Type.Confirm:
-        console.log(`friendship confirmed`);
-        break
+        console.log('accepted friendship....')     
       }
     } catch (e) {
       console.error(e)
-    }
+    }    
   })
   .start()  
 }
