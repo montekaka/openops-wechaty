@@ -51,11 +51,14 @@ req body:
 }
 ```
 
+3. Logout the wechaty bot
+
+- GET: /v1/bot-logout
 
 ### Basic chat function
 
-1. Able to send message to contact
-2. Able to receive message from contact
+1. Able to send message to contact (DONE)
+2. Able to receive message from contact (DONE)
 3. Able to create QR code to invite friends
-4. Able to receive friend request
-5. Able to approve friend request
+4. Able to receive friend request (DONE)
+5. Able to approve friend request (DONE)
