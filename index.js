@@ -64,6 +64,7 @@ const startBot = async () => {
       // const contact = message.from();
       
       const contact = message.talker()
+      const avatar = await contact.avatar();
       // Make a request to the backend server:
       // 1. save the message to database
       // 2. send the message to front end client app throught socket.io
@@ -73,6 +74,7 @@ const startBot = async () => {
         content: message.text(), 
         createTime: message.date(), 
         fromUserName: contact.name(), 
+        fromUserAvatar: avatar.remoteUrl,
         fromUserId: contact.id,
         messageType: 'receive'
       })
